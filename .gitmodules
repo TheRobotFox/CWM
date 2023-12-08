@@ -1,0 +1,3 @@
+[submodule "Conscreen"]
+	path = Conscreen
+	url = git@github.com:TheRobotFox/Conscreen
