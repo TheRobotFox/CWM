@@ -2,7 +2,7 @@
 
 static void CWM_debug_print_window_List(CWM_window w)
 {
-	//PRINTF(STR("debug printing " _STR "\n"), w->content.title.str);
+	//PRINTF(STR("debug printing " _STR "\n"), w->info.title.str);
 }
 
 int main(void)

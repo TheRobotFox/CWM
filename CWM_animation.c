@@ -1,4 +1,5 @@
 #include "CWM_animation.h"
+#include "Conscreen/List/List.h"
 
 typedef struct {
 	uint32_t interval;
@@ -45,9 +46,9 @@ static void CWM_animation_event_update(CWM_animation_event *event)
 }
 
 
-void CWM_animation_group_update(List group)
+void CWM_animation_group_update(CWM_animation_group group)
 {
-	List_forward(group, CWM_animation_struct_update);
+	LIST_FORWARD(CWM_animation, group, CWM_animation_struct_update);
 }
 
 void CWM_animation_unregister_struct(CWM_animation event)
@@ -82,7 +83,7 @@ void CWM_animation_register_struct(CWM_animation event)
 void CWM_animation_update()
 {
 	if(registred)
-		List_forward(registred, CWM_animation_group_update);
+		LIST_FORWARD(List, registred, CWM_animation_group_update);
 }
 
 void CWM_animation_register_group(List group)
@@ -91,7 +92,7 @@ void CWM_animation_register_group(List group)
 		return;
 
 	if(!registred){
-		registred = List_create(sizeof(List));
+		registred = LIST_create( List );
 	}
 	List_push(registred, group);
 }
@@ -104,14 +105,14 @@ void CWM_animation_unregister_group(List group)
 
 void CWM_animation_free()
 {
-	List_forward(registred, CWM_animation_group_free);
+	LIST_FORWARD(List, registred, CWM_animation_group_free);
 	List_free(registred);
 	registred=0;
 }
 
 List CWM_animation_group_create()
 {
-	return List_create(sizeof(struct CWM_animation_struct));
+	return LIST_create( struct CWM_animation_struct );
 }
 
 void CWM_animation_group_register(CWM_animation_group group, CWM_animation anim)
@@ -130,7 +131,7 @@ void CWM_animation_group_free(CWM_animation_group group)
 
 static CWM_animation CWM_animation_struct_create()
 {
-	return malloc(sizeof(struct CWM_animation_struct));
+	return (struct CWM_animation_struct*) malloc(sizeof(struct CWM_animation_struct));
 }
 
 CWM_animation CWM_animation_interval_create(uint32_t interval, void (*act)(void))

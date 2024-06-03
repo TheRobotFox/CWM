@@ -10,7 +10,10 @@ enum CWM_window_point_type{
 	// Conscreen_AUTOMATIC TODO
 };
 
-typedef struct CWM_window* CWM_window;
+struct _CWM_window;
+typedef struct _CWM_window* CWM_window;
+struct _CWM_renderer;
+typedef struct _CWM_renderer* CWM_renderer;
 
 typedef struct{
 	float x,y;
@@ -58,7 +61,8 @@ i16vec2 CWM_window_size_get_content(CWM_window w);
 i16vec2 CWM_window_pos_get(CWM_window w);
 i16vec2 CWM_window_pos_get_content(CWM_window w);
 
+void CWM_window_set_renderer(CWM_window w, CWM_renderer r);
 
-void CWM_window_renderer_text(CWM_window w, Conscreen_event event, Conscreen_pixel *content, void *data);
+void CWM_window_renderer_text(Conscreen_pixel *content, i16vec2 size, void *data);
 
 void CWM_deinit();

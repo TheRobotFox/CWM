@@ -1,4 +1,5 @@
 #include "CWM_internal.h"
+#include "Conscreen/Conscreen_string.h"
 
 static struct {
 	int initilized;
@@ -54,7 +55,7 @@ void CWM_internal_string_set(CWM_string *string,const Conscreen_char *text, size
 	if(string->str)
 		free(string->str);
 
-	string->str=malloc(length*sizeof(Conscreen_char));
+	string->str=(Conscreen_char*)malloc(length*sizeof(Conscreen_char));
 	string->len=length;
 	memcpy(string->str, text, length*sizeof(Conscreen_char));
 }
@@ -101,4 +102,15 @@ int CWM_init(){
 	}
 	// Conscreen_error(root_window, Conscreen_WARNING,"ConScreen already initilized!");
 	return 1;
+}
+
+int CWM_char_is_empty(Conscreen_char c){
+	switch(c){
+	case ' ':
+	case '\n':
+		return 1;
+	default:
+		return 0;
+
+	}
 }

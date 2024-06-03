@@ -1,10 +1,14 @@
 #pragma  once
+#include <cstddef>
 #include <signal.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include "CWM.h"
 #include "Conscreen/Conscreen_ANSI.h"
 #include "CWM_render.h"
+#include "Conscreen/Conscreen_screen.h"
+#include "Conscreen/Conscreen_string.h"
 
 extern uint32_t tick;
 
@@ -16,16 +20,24 @@ typedef struct{
 	};
 } CWM_point;
 
-typedef struct CWM_string{
+typedef struct {
 	Conscreen_char *str;
 	size_t len;
 	Conscreen_ansi style;
 } CWM_string;
 
+struct _CWM_renderer
+{
+	CWM_render_function func;
+	LIST(CWM_window) users;
+	void* data;
+};
+
+
 // TODO: User vars hashmap
-typedef struct CWM_window{
-	struct CWM_window *parent;
-	List child_windows;
+typedef struct _CWM_window{
+	struct _CWM_window *parent;
+	LIST(CWM_window) child_windows;
 
 	struct{
 		uint8_t show : 1;              	// show window or not
@@ -54,7 +66,10 @@ typedef struct CWM_window{
 	} info;
 	CWM_renderer renderer;
 
-} *CWM_window;
+	CWM_renderer text_render;
+	CWM_string text;
+
+} _CWM_window;
 
 extern CWM_window root_window;
 
@@ -80,3 +95,9 @@ void CWM_internal_window_free_cleanup(CWM_window parent);
 
 
 void CWM_internal_window_render(CWM_window w);
+
+void CWM_renderer_unregister(CWM_renderer r, CWM_window w);
+void CWM_renderer_register(CWM_renderer r, CWM_window w);
+void CWM_renderer_free(CWM_renderer r);
+
+int CWM_char_is_empty(Conscreen_char c);
