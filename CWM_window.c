@@ -61,6 +61,10 @@ void CWM_internal_window_free(CWM_window w)
 {
 	// recursively free child_windows
 	LIST_FORWARD(CWM_window, w->child_windows, CWM_internal_window_free);
+
+	// remove from parent
+	CWM_window_remove(w);
+
 	// free elements
 	List_free(w->child_windows);
 	if(w->text_render) CWM_renderer_free(w->text_render);
