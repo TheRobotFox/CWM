@@ -1,25 +1,20 @@
 #include "CWM.h"
 #include "Conscreen/List/List.h"
+#include <stdarg.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include "RR.h"
-// Just Layers of renderers
 
-typedef struct _RR_context_data
+struct _RR_context
 {
+    LIST(RR_renderer) chain;
+
     i16vec2 size;
     RR_set_function setScreen;
     RR_get_function getScreen;
     RR_context last_context;
     void *data;
 
-} _RR_context_data;
-
-struct _RR_context
-{
-    LIST(RR_renderer) chain;
-    LIST(RR_renderer) context_data;
-    size_t index;
 };
 
 struct _RR_renderer
@@ -30,45 +25,57 @@ struct _RR_renderer
 };
 
 void RR_set(RR_context context, int16_t x, int16_t y, void *data) {
-    context->index--;
-    context->setScreen(context, x, y, data);
-    context->index++;
+    context->setScreen(context->last_context, x, y, data);
 }
 void* RR_get(RR_context context, int16_t x, int16_t y) {
-
-    return context->getScreen(context, x, y);
+    return context->getScreen(context->last_context, x, y);
 }
 
-RR_context RR_make_chain(int count, ...) {
-    // collect all rendereers (later with Macro)
-    // push in reverse order for list_pop
+static inline RR_context RR_context_next(RR_context last, RR_get_function getScreen, RR_set_function setScreen) {
 
+    RR_context context = malloc(sizeof(struct _RR_context));
+
+    context->chain = last->chain;
+    context->data = NULL;
+    context->getScreen = getScreen;
+    context->setScreen = setScreen;
+    context->last_context = last;
+    return context;
 }
-int RR_render(RR_context context, i16vec2 new_size, RR_set_function setScreen,
-               RR_get_function getScreen, void *data) {
+
+RR_context RR_make_render_chain(int count, ...) {
+
+    RR_context context = malloc(sizeof(struct _RR_context));
+    context->chain = LIST_create(RR_renderer);
+
+    va_list renderers;
+    va_start(renderers, count);
+    while (count--)
+        List_push(context->chain, va_arg(renderers, RR_renderer));
+    va_end(renderers);
+
+    List_reverse(context->chain);
+    return context;
+}
+int RR_render(RR_context context, i16vec2 new_size, RR_get_function getScreen,
+               RR_set_function setScreen) {
 
     RR_renderer next = *(RR_renderer*)List_pop(context->chain);
     if(!next) return -1;
 
-    // write new context data to stack
-    _RR_context_data *cData = List_push(context->context_data, NULL);
-
-    cData->size = new_size;
-    cData->setScreen=setScreen;
-    cData->getScreen=getScreen;
-    cData->data=data;
-
-    context->index++;
+    context->size = new_size;
 
     // Execute new Renderer
-    next->func(context, next->data);
+    next->func(RR_context_next(context, getScreen, setScreen), next->data);
     return 0;
 }
-void *RR_data_get(RR_context context) {
 
-    _RR_context_data *cData = List_at(context->context_data, context->index);
-    if(!cData) return NULL;
-    return cData->data;
+void RR_data_set(RR_context context, void *data)
+{
+    context->data=data;
+}
+void* RR_data_get(RR_context context) {
+    return context->data;
 }
 
 CWM_renderer CWM_renderer_create(CWM_render_function func)
