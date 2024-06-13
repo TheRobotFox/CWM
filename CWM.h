@@ -1,4 +1,5 @@
 #pragma once
+#include "CWM_internal.h"
 #include "Conscreen/Conscreen.h"
 #include <stdbool.h>
 #include "CWM_animation.h"
@@ -40,6 +41,8 @@ void CWM_error(CWM_window screen, CWM_error_level level, const Conscreen_char*co
 
 // get pointer to new child window for give window
 CWM_window CWM_window_push(CWM_window parent);
+
+void CWM_window_move(CWM_window w, CWM_window target);
 
 // free window and do cleanup
 void CWM_window_remove(CWM_window w);

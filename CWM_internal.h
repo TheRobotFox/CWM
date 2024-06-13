@@ -26,12 +26,6 @@ typedef struct {
 	Conscreen_ansi style;
 } CWM_string;
 
-struct _CWM_renderer
-{
-	CWM_render_function func;
-	LIST(CWM_window) users;
-	void* data;
-};
 
 
 // TODO: User vars hashmap
@@ -75,13 +69,14 @@ extern CWM_window root_window;
 
 void CWM_internal_init_check();
 
+CWM_window CWM_window_create();
+void CWM_internal_window_push(CWM_window parent, CWM_window w);
+void CWM_internal_window_remove(CWM_window w);
 
 int16_t maxi16(int16_t a, int16_t b);
 int16_t mini16(int16_t a, int16_t b);
 
 void CWM_internal_string_set(CWM_string *string, const Conscreen_char *text, size_t length);
-
-CWM_window CWM_internal_window_create();
 
 // internal function for creating a template window stuct instance pointer
 void CWM_internal_console_write(char* string, int size);

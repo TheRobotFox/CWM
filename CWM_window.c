@@ -72,8 +72,7 @@ void CWM_internal_window_free(CWM_window w)
 
 }
 
-
-void CWM_window_remove(CWM_window w)
+void CWM_internal_window_remove(CWM_window w)
 {
 	CWM_internal_init_check();
 
@@ -82,9 +81,15 @@ void CWM_window_remove(CWM_window w)
 		List_rme(w->parent->child_windows, w);
 	}
 
-	CWM_internal_window_free(w);
 }
 
+
+void CWM_window_remove(CWM_window w)
+{
+
+	CWM_internal_window_remove(w);
+	CWM_internal_window_free(w);
+}
 
 CWM_window CWM_window_root_get()
 {
@@ -92,14 +97,24 @@ CWM_window CWM_window_root_get()
 	return root_window;
 }
 
+void CWM_internal_window_push(CWM_window parent, CWM_window w)
+{
+	CWM_internal_init_check();
+	w->parent=parent;
+	List_push(parent->child_windows, &w);
+}
 
 CWM_window CWM_window_push(CWM_window parent)
 {
-	CWM_internal_init_check();
-	CWM_window w = CWM_internal_window_create();
-	w->parent=parent;
-	List_push(parent->child_windows, &w);
+	CWM_window w = CWM_window_create();
+	CWM_internal_window_push(parent, w);
 	return w;
+}
+
+void CWM_window_move(CWM_window w, CWM_window target)
+{
+	CWM_window_remove(w);
+	CWM_internal_window_push(target);
 }
 
 void CWM_window_title_set(CWM_window w, const Conscreen_char* title, size_t length)
@@ -533,71 +548,10 @@ void CWM_window_set_renderer(CWM_window w, CWM_renderer r)
 
 
 
-
-// Text Renderer
-#define TAB_LENGTH 4
-
-static int CWM_internal_window_text_crop(const Conscreen_char *str, uint32_t length, i16vec2 size)
-{
-	int i=0,
-	  x_length=0,
-	  y_length=0;
-
-	for(i=length-1; i>0; i--){
-		if(str[i]=='\t')
-			x_length+=TAB_LENGTH;
-		else
-			length++;
-
-		if(str[i]=='\n' || x_length>=size.x){
-			y_length++;
-		}
-		if(y_length==size.y) break;
-	}
-	return i;
-}
-
-void CWM_window_renderer_text(Conscreen_pixel *content, i16vec2 size, void *data)
-{
-
-	// draw opacity
-	if(size.x && size.y){
-
-		CWM_string *string = (CWM_string *)data;
-		Conscreen_pixel p = {.style=string->style};
-		const Conscreen_char* text = string->str;
-
-		// Crop text to fit screen
-		int start=CWM_internal_window_text_crop(text,string->len, size),
-			offset=0;
-
-		for(size_t i=start; i<string->len; i++)
-		{
-			if(text[i]=='\n')
-				offset+=size.x - (offset%size.x);
-			else if(text[i]=='\t')
-				offset+=TAB_LENGTH;
-			else{
-				if(text[i]==127){
-					p.character = ' ';
-					offset--;
-					if(offset<0) offset=0;
-					content[offset] =p;
-				} else {
-					p.character = text[i];
-					content[offset++] =p;
-				}
-			}
-		}
-	}
-
-}
-
-
 void CWM_window_text_set(CWM_window w, const Conscreen_char* text, size_t length)
 {
 	if(!w->text_render){
-		w->text_render=CWM_renderer_create(CWM_window_renderer_text);
+		w->text_render=CWM_renderer_create(CWM_renderers_text);
 		CWM_renderer_data_set(w->text_render, (void*)(&w->text));
 	}
 	CWM_window_set_renderer(w, w->text_render);

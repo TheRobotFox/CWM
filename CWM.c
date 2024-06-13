@@ -80,7 +80,7 @@ int CWM_init(){
 		status.initilized=1;
 
 		Conscreen_init();
-		root_window = CWM_internal_window_create();
+		root_window = CWM_window_create();
 		CWM_window_border_show(root_window,0);
 		CWM_window_pos_set_absolute(root_window,0,0);
 		CWM_window_size_set_relative(root_window,1,1);
