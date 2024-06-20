@@ -1,3 +1,6 @@
 [submodule "Conscreen"]
 	path = Conscreen
 	url = git@github.com:TheRobotFox/Conscreen
+[submodule "info"]
+	path = info
+	url = git@github.com:TheRobotFox/info
