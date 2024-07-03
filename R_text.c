@@ -17,7 +17,7 @@ static int crop_text(const Conscreen_char *str, uint32_t length, RR_point size)
 		if(str[i]=='\t')
 			x_length+=TAB_LENGTH- (x_length%TAB_LENGTH);
 		else
-			length++;
+			x_length++;
 
 		if(str[i]=='\n'){
 			y_length++;
@@ -28,7 +28,7 @@ static int crop_text(const Conscreen_char *str, uint32_t length, RR_point size)
 		}
 		if(y_length==size.y) break;
 	}
-	return i;
+	return i+1;
 }
 
 #define SET_PIXEL(ctx, offset, size, pixel) RR_set(ctx, offset%size.x, offset/size.x, p)
@@ -53,7 +53,7 @@ static void render_text(RR_context ctx, void *data)
 			switch (text[i]) {
 				case '\n':
 					p.character=' ';
-					for(; offset%size.x; offset++)
+					for(int old=offset; offset%size.x || offset==old; offset++)
 						SET_PIXEL(ctx, offset, size, p);
 					break;
 				case '\t':

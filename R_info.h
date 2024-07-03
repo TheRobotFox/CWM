@@ -26,7 +26,7 @@ void R_info_set_clamp(RR_renderer r, const char* clamp);
 void R_info_set_side(RR_renderer r, enum INFO_side side);
 void R_info_set_align(RR_renderer r, enum INFO_align align);
 
-void R_info_set_level(RR_renderer r, CWM_error_level level);
+void R_info_set_level(RR_renderer r, BW_error_level level);
 
 void R_info_vprintf(RR_renderer r, const Conscreen_char* format, va_list arg);
 void R_info_printf(RR_renderer r, const Conscreen_char* format, ...);

@@ -3,6 +3,7 @@
 #include "Conscreen/Conscreen_console.h"
 #include "Conscreen/Conscreen_screen.h"
 #include "Conscreen/Conscreen_string.h"
+#include "BasicWindow.h"
 #include "RR_context.h"
 #include "R_dwm.h"
 #include <stdlib.h>
@@ -13,7 +14,7 @@ static struct {
 	void (*deinit_next)(int);
 } status={0};
 
-CWM_window root_window;
+BasicWindow root_window;
 
 #if defined(unix) || defined(__unix__) || defined(__unix)
 
@@ -70,7 +71,7 @@ RR_context cwm_render_context;
 
 void CWM_deinit(){
 	CWM_internal_init_check();
-	CWM_window_remove(root_window);
+	CWM_remove(root_window);
 	R_dwm_free(cwm_root_dwm);
 	RR_context_free(cwm_render_context);
 	/* CWM_animation_free(); */
@@ -78,10 +79,10 @@ void CWM_deinit(){
 	status.initilized=0;
 }
 
-/* static void CWM_internal_animate_window_title_wrap() */
+/* static void CWM_internal_animate_title_wrap() */
 /* { */
-/* 	extern uint32_t window_title_wrap; */
-/* 	 window_title_wrap+=1; */
+/* 	extern uint32_t title_wrap; */
+/* 	 title_wrap+=1; */
 /* } */
 
 // setup important CWM
@@ -97,23 +98,23 @@ int CWM_init(){
 							  1, cwm_root_dwm);
 		// setup root window
 
-		root_window = CWM_internal_window_create();
-		DWM_register(cwm_root_dwm, root_window->frame, 0);
+		root_window = (BasicWindow)CWM_internal_create();
+		DWM_register(cwm_root_dwm, ((CWM_window)root_window)->frame, 0);
 
-		CWM_window_renderer_toggle(root_window, "BORDER", false);
-		CWM_window_renderer_toggle(root_window, "TITLE", false);
-		CWM_window_renderer_toggle(root_window, "ERROR", false);
-		CWM_window_renderer_toggle(root_window, "OPACITY", false);
-		CWM_window_renderer_toggle(root_window, "TEXT", false);
-		CWM_window_gen_chain(root_window);
+		BW_renderer_toggle(root_window, "BORDER", false);
+		BW_renderer_toggle(root_window, "TITLE", false);
+		BW_renderer_toggle(root_window, "ERROR", false);
+		BW_renderer_toggle(root_window, "OPACITY", false);
+		BW_renderer_toggle(root_window, "TEXT", false);
+		BW_gen_chain(root_window);
 
-		CWM_window_pos_set_absolute(root_window,0,0);
-		CWM_window_size_set_relative(root_window,1,1);
-		CWM_window_title_set(root_window, STR("App"), 3);
+		CWM_pos_set_absolute(root_window,0,0);
+		CWM_size_set_relative(root_window,1,1);
+		BW_title_set(root_window, STR("App"), 3);
 
 		// register animation
 
-		/* CWM_animation anim = CWM_animation_interval_create(10, CWM_internal_animate_window_title_wrap); */
+		/* CWM_animation anim = CWM_animation_interval_create(10, CWM_internal_animate_title_wrap); */
 		/* CWM_animation_register_struct(anim); */
 		/* CWM_animation_struct_free(anim); */
 
@@ -141,11 +142,11 @@ RR_pixel CWM_internal_conscreen_get(RR_context _ctx, int16_t x, int16_t y)
 void CWM_render()
 {
 	Conscreen_screen_begin();
+	Conscreen_screen_clear();
 	Conscreen_point size = Conscreen_screen_size();
+	BasicWindow w = CWM_root_get();
 
-	CWM_window w = CWM_window_root_get();
-
-	CWM_window_prepare(w);
+	CWM_gen_chains(w);
 
 	RR_render(cwm_render_context,
 			  (RR_point){size.x, size.y},

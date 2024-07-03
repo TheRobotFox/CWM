@@ -26,8 +26,13 @@ static struct Error_display errors[] = {
 const Conscreen_char* clamps[4] = {
     STR(">|%|<"),
     STR("<[%]>"),
+    #ifdef CONSCREEN_CHAR
+    STR("v%^"),
+    STR("v%^")
+    #elifdef CONSCREEN_WCHAR
     STR("∨—%—∧"),
     STR("∨—%—∧")
+    #endif
 };
 
 static void print_side(RR_context ctx,
@@ -48,8 +53,7 @@ static void print_side(RR_context ctx,
             axies = &pos.x;
             break;
         case INFO_LEFT:
-            pos.y=size.y-1;
-            direction=-1;
+            direction=1;
             axies = &pos.y;
             break;
         case INFO_BOTTOM:
@@ -58,7 +62,7 @@ static void print_side(RR_context ctx,
             axies = &pos.x;
             break;
         case INFO_RIGHT:
-            pos.x=size.y-1;
+            pos.x=size.x-1;
             direction=1;
             axies = &pos.y;
     }
@@ -80,7 +84,7 @@ static void print_side(RR_context ctx,
 
 typedef struct {
     CWM_string string;
-    CWM_error_level level;
+    BW_error_level level;
     enum INFO_side side;
     enum INFO_align align;
     const char* clamp;
@@ -88,9 +92,9 @@ typedef struct {
 typedef _INFO_info* INFO_info;
 
 
-static size_t get_offset(enum INFO_side side, enum INFO_align align, size_t length, RR_point size)
+static int16_t get_offset(enum INFO_side side, enum INFO_align align, size_t length, RR_point size)
 {
-    size_t offset;
+    int16_t offset;
     int16_t *space;
     switch (side) {
         case INFO_TOP:
@@ -102,11 +106,12 @@ static size_t get_offset(enum INFO_side side, enum INFO_align align, size_t leng
     }
     switch (align) {
         case INFO_START:
-            offset = 1; break;
+            offset = mini16(1, *space-length-2); break;
         case INFO_CENTER:
-            offset = (*space-length-2)/2; break;
+            offset = mini16((*space-length-2)/2, *space-length-2); break;
         case INFO_END:
-            offset = *space-1; break;
+            offset = *space-length-1;
+            if(offset<0) offset=*space-length-2; break;
     }
     return offset;
 }
@@ -118,11 +123,10 @@ static void render_info(RR_context ctx, void *data)
 
     INFO_info info = data;
 
-    size_t clamp_start_len,
-            clamp_end_len,
+    int clamp_start_len,
+             clamp_end_len,
             tag_len=0,
-            trunc=0,
-            offset;
+            trunc=0;
 
 
     // eval clamp
@@ -143,7 +147,7 @@ static void render_info(RR_context ctx, void *data)
     }
 
     // calc offset and truncate
-    offset = get_offset(info->side,
+    double offset = get_offset(info->side,
                                 info->align,
                                 info->string.len
                                             +clamp_start_len
@@ -151,7 +155,7 @@ static void render_info(RR_context ctx, void *data)
                                             +tag_len,
                                 size);
     if(offset<0){
-        trunc = -2*offset;
+        trunc = -1*offset;
         offset = 1;
         if(trunc>=info->string.len)
             return; // stop if too little space
@@ -199,7 +203,7 @@ void R_info_set_text(RR_renderer r, const char*const name, size_t length)
     CWM_internal_string_set(&info->string, name, length);
 }
 
-void R_info_set_level(RR_renderer r, CWM_error_level level)
+void R_info_set_level(RR_renderer r, BW_error_level level)
 {
     INFO_info info = RR_renderer_data_get(r);
     info->level = level;

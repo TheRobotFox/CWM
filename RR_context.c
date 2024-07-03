@@ -55,11 +55,12 @@ void RR_context_make_chain(RR_context context, int count, ...) {
         List_push(chain, &r);
     }
     va_end(renderers);
-    List_reverse(chain);
     RR_context_chain_set(context, chain);
 }
 void RR_render(RR_context context, RR_point new_size, RR_get_function getScreen,
                RR_set_function setScreen, void *data) {
+
+    if(!context->chain) return;
 
     RR_renderer *next = List_at(context->chain, context->index);
     if(!next) return;
