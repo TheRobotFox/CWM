@@ -24,7 +24,7 @@ struct _RR_context
 
 void RR_context_free(RR_context context)
 {
-    List_free(context->chain);
+    if(context->chain) List_free(context->chain);
     List_free(context->context_data);
     free(context);
 }

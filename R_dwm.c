@@ -135,7 +135,7 @@ RR_renderer R_dwm(){
 
 void R_dwm_free(RR_renderer r)
 {
-    List_free(RR_renderer_data_get(r));
+    Heap_free(RR_renderer_data_get(r));
     RR_renderer_free(r);
 }
 

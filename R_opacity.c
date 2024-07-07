@@ -5,6 +5,7 @@
 #include "RR_renderer.h"
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 
@@ -46,8 +47,8 @@ static RR_pixel R_opacity_getScreen(RR_context context, int16_t x, int16_t y)
 static void R_opacity_render(RR_context context, void *data)
 {
     RR_point size = RR_size_get(context);
+    if(!size.x*size.y) return;
     RR_pixel (*screen)[size.y] = malloc(sizeof(RR_pixel[size.x][size.y]));
-    RR_pixel init = {.character=0, .style=CONSCREEN_ANSI_NORMAL};
 
     for(size_t y=0; y<size.y; y++){
         for(size_t x=0; x<size.x; x++){
@@ -71,6 +72,7 @@ static void R_opacity_render(RR_context context, void *data)
             RR_set(context, x, y, pixel);
         }
     }
+    free(screen);
 }
 
 RR_renderer R_opacity()

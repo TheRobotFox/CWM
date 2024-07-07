@@ -62,8 +62,8 @@ void BW_internal_gen_chain(BasicWindow w)
 
 BasicWindow BW_create(BasicWindow buffer)
 {
-	BasicWindow w = buffer;
 	if(!buffer) buffer = malloc(sizeof(_BasicWindow));
+	BasicWindow w = buffer;
 
 	w->renderers=LIST_create(_BW_renderer);
 	w->chain_dirty = true;

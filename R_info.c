@@ -237,6 +237,7 @@ void R_info_vprintf(RR_renderer r, const Conscreen_char*const format, va_list ar
 	Conscreen_string string = Conscreen_string_create();
 	Conscreen_string_vsprintf(string, format, arg);
 	CWM_internal_string_set(&info->string,Conscreen_string_start(string),Conscreen_string_length(string));
+    Conscreen_string_free(string);
 }
 void R_info_printf(RR_renderer r, const Conscreen_char*const format, ...)
 {
