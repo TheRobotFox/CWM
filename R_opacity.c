@@ -79,7 +79,7 @@ RR_renderer R_opacity()
 {
     RR_renderer r = RR_renderer_create(R_opacity_render);
     float *opacity = malloc(sizeof(float));
-    *opacity=1;
+    *opacity=0.75;
     RR_renderer_data_set(r, opacity);
     return r;
 }

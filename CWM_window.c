@@ -92,8 +92,9 @@ void CWM_depth_set(BasicWindow _w, int depth)
 {
 	CWM_window w = (CWM_window)_w;
 	if(!w->parent) return;
-	DWM_unregister(BW_get_renderer(&w->parent->window, "DWM"), ((CWM_window)w)->frame);
-	DWM_register(BW_get_renderer(&w->parent->window, "DWM"), ((CWM_window)w)->frame, depth);
+	RR_renderer dwm = BW_get_renderer(&w->parent->window, "DWM");
+	DWM_unregister(dwm, ((CWM_window)w)->frame);
+	DWM_register(dwm, ((CWM_window)w)->frame, depth);
 }
 
 void CWM_gen_chains(BasicWindow _w)
