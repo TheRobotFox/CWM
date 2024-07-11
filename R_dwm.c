@@ -34,9 +34,22 @@ typedef struct _DWM_window {
     RR_context render_chain;
 } Window;
 
-static RR_point DWM_window_pos_get(RR_context ctx, DWM_window w)
+static int16_t min(int16_t a, int16_t b)
 {
-	RR_point pos;
+    if(a<b) return a;
+    return b;
+}
+struct Rect {
+    RR_point pos, size;
+};
+
+static struct Rect DWM_window_rect(RR_context ctx, DWM_window w)
+{
+    struct Rect rect;
+
+    RR_point parrent_size = RR_size_get(ctx);
+	f32vec2 pos;
+    RR_point size;
 
     switch (w->pos.type)
     {
@@ -47,28 +60,15 @@ static RR_point DWM_window_pos_get(RR_context ctx, DWM_window w)
         break;
 
     case DWM_RELATIVE: {
-
-            RR_point parrent_size = RR_size_get(ctx);
             pos.x = parrent_size.x * w->pos.relative.x;
             pos.y = parrent_size.y * w->pos.relative.y;
             break;
         }
 
     }
-	return pos;
-}
+    rect.pos.x = ceilf(pos.x);
+    rect.pos.y = ceilf(pos.y);
 
-static int16_t min(int16_t a, int16_t b)
-{
-    if(a<b) return a;
-    return b;
-}
-static RR_point DWM_window_size_get(RR_context ctx, DWM_window w)
-{
-	RR_point size;
-
-    RR_point parrent_size = RR_size_get(ctx);
-    RR_point pos=DWM_window_pos_get(ctx, w);
     switch (w->size.type)
     {
     case DWM_ABSOLUTE:
@@ -76,14 +76,14 @@ static RR_point DWM_window_size_get(RR_context ctx, DWM_window w)
         size.y = w->size.absolute.y;
         break;
     case DWM_RELATIVE:
-        size.x = ceilf(w->size.relative.x*parrent_size.x);
-        size.y = ceilf(w->size.relative.y*parrent_size.y);
+        size.x = ceilf(w->size.relative.x*parrent_size.x-pos.x+rect.pos.x);
+        size.y = ceil(w->size.relative.y*parrent_size.y-pos.y+rect.pos.y);
         break;
     }
 
-    size.x = min(size.x, parrent_size.x-pos.x);
-    size.y = min(size.y, parrent_size.y-pos.y);
-	return size;
+    rect.size.x = min(size.x, parrent_size.x-pos.x);
+    rect.size.y = min(size.y, parrent_size.y-pos.y);
+    return rect;
 }
 
 struct DWM_render_info {
@@ -104,10 +104,13 @@ static RR_pixel dwm_forward_get(RR_context ctx, int16_t x, int16_t y)
 static void DWM_internal_window_render(RR_context ctx, DWM_window w)
 {
 	if(!w->render_chain) return;
-    struct DWM_render_info info = {ctx, DWM_window_pos_get(ctx, w)};
+    struct Rect rect = DWM_window_rect(ctx, w);
+    struct DWM_render_info info = {ctx, rect.pos};
+
+    /* RR_render(ctx, RR_size_get(ctx), RR_get_default, RR_set_default, NULL); */
 
     RR_render(w->render_chain,
-              DWM_window_size_get(ctx, w),
+              rect.size,
               dwm_forward_get,
               dwm_forward_set,
               &info);
@@ -163,6 +166,12 @@ DWM_window DWM_window_create() {
 
     w->z_depth=0;
     return w;
+}
+
+// TODO refactor DWM window -> managed by DWM
+void DWM_window_free(DWM_window win)
+{
+    free(win);
 }
 
 void DWM_window_pos_set_abs(DWM_window w, int16_t x, int16_t y) {

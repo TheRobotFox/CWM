@@ -20,3 +20,4 @@ void DWM_window_pos_set_rel(DWM_window w, float x, float y);
 void DWM_window_size_set_abs(DWM_window w, int16_t x, int16_t y);
 void DWM_window_size_set_rel(DWM_window w, float x, float y);
 void DWM_window_renderer_set(DWM_window w, RR_context ctx);
+void DWM_window_free(DWM_window win);

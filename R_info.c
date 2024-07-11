@@ -3,6 +3,7 @@
 #include "Conscreen/Conscreen_ANSI.h"
 #include "Conscreen/Conscreen_screen.h"
 #include "Conscreen/Conscreen_string.h"
+#include "RR.h"
 #include "RR_renderer.h"
 #include <stddef.h>
 #include <stdint.h>
@@ -245,4 +246,10 @@ void R_info_printf(RR_renderer r, const Conscreen_char*const format, ...)
 	va_start(arg, format);
 	R_info_vprintf(r, format, arg);
 	va_end(arg);
+}
+void R_info_text_get(RR_renderer r, const char** out, int *len)
+{
+    INFO_info info = RR_renderer_data_get(r);
+    *out = info->string.str;
+    *len = info->string.len;
 }

@@ -125,7 +125,7 @@ int BW_renderer_toggle(BasicWindow w, const char*const name, bool active)
 	BW_renderer cr = List_finde(w->renderers, BW_renderer_find, name);
 
 	if(!cr) return -1;
-	if(cr->active==active) return 0;
+	if(cr->active==active) return 1;
 	cr->active = active;
 	w->chain_dirty = true;
 	return 0;

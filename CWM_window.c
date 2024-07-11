@@ -53,6 +53,7 @@ void CWM_internal_remove(CWM_window w)
 	// remove from parent
 	if(!w->parent) return;
 	DWM_unregister(BW_get_renderer(&w->parent->window, "DWM"), w->frame);
+	DWM_window_free(w->frame);
 	List_rme(w->parent->children, w);
 
 }

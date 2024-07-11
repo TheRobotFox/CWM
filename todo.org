@@ -3,11 +3,17 @@
 ** [ ] I3 window at least one pixel
 Edit fracs to give each windw at least one pixel on screen
 ** [ ] Conscreen non blocking read key (Threads?)
-** [ ] Implement List
+** [ ] AM take contexts, wrap own window -> no duplicate highlights
+** [X] I3 movement and rm buffer fix, and split parrapel
+** [X] Diagnose some kill funny buissness
+** [ ] Fix visual select
+
+** [X] Implement List
 List viewer
 Put options -> name + opt render function
 get current selection \in {item, parameter}
 Filter by ordered letter occurance
+
 
 ** [X] handle window size rounding
 ** [X] fix select and select_parent

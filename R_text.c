@@ -72,8 +72,8 @@ static void render_text(RR_context ctx, void *data)
 			SET_PIXEL(ctx, offset, size, p);
 			offset++;
 		}
-		RR_render(ctx, size, RR_get_default, RR_set_default, NULL);
 	}
+	RR_render(ctx, size, RR_get_default, RR_set_default, NULL);
 
 }
 

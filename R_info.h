@@ -30,3 +30,5 @@ void R_info_set_level(RR_renderer r, BW_error_level level);
 
 void R_info_vprintf(RR_renderer r, const Conscreen_char* format, va_list arg);
 void R_info_printf(RR_renderer r, const Conscreen_char* format, ...);
+
+void R_info_text_get(RR_renderer r, const char** out, int *len);
