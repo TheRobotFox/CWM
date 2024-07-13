@@ -204,7 +204,8 @@ void AM_key_event(AM _am, char key)
             };
             // highlight new App
             AM_highlight((App)app, false);
-            AM_highlight(WM_i3_get(am->i3), true);
+            App new = WM_i3_get(am->i3);
+            AM_highlight(new, true);
 
             reset:
             am->state=INSERT;
