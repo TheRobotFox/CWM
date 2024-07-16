@@ -20,8 +20,8 @@
 
 typedef struct _App
 {
-    _BasicWindow window;
-    int magic;
+    RR_context chain;
+    const char *name;
     void *data;
     AM_callback callback;
 } _App;
@@ -69,18 +69,19 @@ static void selector_callback(App al, char key, void *data)
         }
     }
 }
+
+// TODO set app to RR_context
+// create context renderer for App Views
+// Maybe extract app from App viewer?
+
 static char* app_format(void *element)
 {
     _App *app = *(_App**)element;
-    RR_renderer r = BW_get_renderer(&app->window, "TITLE");
-    int length;
-    const char *title;
-    R_info_text_get(r, &title, &length);
 
-    char *text = malloc(length*sizeof(Conscreen_char)+1);
-    memcpy(text, title, length);
-    text[length]=0;
-    return text;
+    int len = strlen(app->name)+1;
+    char *res = malloc(len);
+    memcpy(res, app->name, len);
+    return res;
 }
 
 static void AM_select(AM_window am)
@@ -96,6 +97,7 @@ static void AM_select(AM_window am)
     WM_i3_set(am->i3, selector);
     AM_highlight(selector, true);
 }
+
 AM AM_create()
 {
     AM_window am = malloc(sizeof(_AM_window));

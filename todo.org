@@ -2,12 +2,15 @@
 ** [ ] FIX CONSCreen WCHAR
 ** [ ] I3 window at least one pixel
 Edit fracs to give each windw at least one pixel on screen
-** [ ] Conscreen non blocking read key (Threads?)
+** [X] Conscreen non blocking read key (Threads?)
 ** [ ] AM take contexts, wrap own window -> no duplicate highlights
+** [ ] R_List format
+provide buffer screen length
+return acctuall length in bytes
 ** [X] I3 movement and rm buffer fix, and split parrapel
 ** [X] Diagnose some kill funny buissness
-** [ ] Fix visual select
-** [ ] CWM depth inconsistent
+** [X] Fix visual select
+** [X] CWM depth inconsistent
 
 ** [X] Implement List
 List viewer
