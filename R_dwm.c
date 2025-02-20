@@ -107,13 +107,14 @@ static void DWM_internal_window_render(RR_context ctx, DWM_window w)
     struct Rect rect = DWM_window_rect(ctx, w);
     struct DWM_render_info info = {ctx, rect.pos};
 
-    /* RR_render(ctx, RR_size_get(ctx), RR_get_default, RR_set_default, NULL); */
-
     RR_render(w->render_chain,
               rect.size,
               dwm_forward_get,
               dwm_forward_set,
               &info);
+
+    RR_render(ctx, RR_size_get(ctx), RR_get_default, RR_set_default, NULL);
+
 }
 
 static void RR_renderer_dynamicWM(RR_context context, void *data){

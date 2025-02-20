@@ -4,7 +4,7 @@
 #include <stddef.h>
 
 // use '\t' for split
-typedef char* (*R_list_format)(void *element);
+typedef int (*R_list_format)(void *element, char *buffer, int max_len);
 
 RR_renderer R_list();
 void R_list_down(RR_renderer r);

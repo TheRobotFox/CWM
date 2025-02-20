@@ -20,8 +20,7 @@
 
 typedef struct _App
 {
-    RR_context chain;
-    const char *name;
+    _BasicWindow window;
     void *data;
     AM_callback callback;
 } _App;
@@ -70,18 +69,16 @@ static void selector_callback(App al, char key, void *data)
     }
 }
 
-// TODO set app to RR_context
-// create context renderer for App Views
-// Maybe extract app from App viewer?
-
-static char* app_format(void *element)
+static int app_format(void *element, char *buffer, int max)
 {
     _App *app = *(_App**)element;
-
-    int len = strlen(app->name)+1;
-    char *res = malloc(len);
-    memcpy(res, app->name, len);
-    return res;
+    RR_renderer r = BW_get_renderer(&app->window, "TITLE");
+    int len;
+    const char *title;
+    R_info_text_get(r, &title, &len);
+    memcpy(buffer, title, len);
+    buffer[len]=0;
+    return len+1;
 }
 
 static void AM_select(AM_window am)
@@ -140,7 +137,6 @@ App AM_app_create(const char *name, AM_callback callback)
     BW_gen_chain(&app->window);
 
     app->data = NULL;
-    app->magic=69;
     app->callback = callback;
     return (BasicWindow)app;
 }
