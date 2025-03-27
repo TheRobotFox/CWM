@@ -20,6 +20,7 @@
 
 typedef struct _App
 {
+    _BasicWindow window;
     RR_context chain;
     const char *name;
     void *data;
@@ -77,6 +78,7 @@ static void selector_callback(App al, char key, void *data)
 static char* app_format(void *element)
 {
     _App *app = *(_App**)element;
+    app->name = "Test";
 
     int len = strlen(app->name)+1;
     char *res = malloc(len);
@@ -140,7 +142,7 @@ App AM_app_create(const char *name, AM_callback callback)
     BW_gen_chain(&app->window);
 
     app->data = NULL;
-    app->magic=69;
+    /* app->magic=69; */
     app->callback = callback;
     return (BasicWindow)app;
 }

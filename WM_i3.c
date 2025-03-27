@@ -3,11 +3,8 @@
 #include "BasicWindow_internal.h"
 #include "Conscreen/List/List.h"
 #include "RR.h"
-#include "RR_context.h"
-#include "RR_renderer.h"
 #include "R_dwm.h"
 #include "WM_i3.h"
-#include <math.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -16,7 +13,7 @@
 #include <float.h>
 
 typedef enum {
-VBRANCH=0, HBRANCH=1, LEAF
+VBRANCH=0, HBRANCH=1, LEAF = 2
 } I3_type;
 
 typedef struct _Leaf {
@@ -38,6 +35,7 @@ typedef _I3_node* I3_node;
 typedef struct _I3_context {
     I3_node layout;
     I3_node selected;
+    float cursor_pos[2];
     bool dirty;
     RR_renderer dwm;
 } _I3_context;
@@ -111,6 +109,8 @@ I3_context WM_i3(RR_renderer dwm)
     ctx->dwm = dwm;
     ctx->dirty = true;
     ctx->selected=ctx->layout;
+    ctx->cursor_pos[0] = 0.5;
+    ctx->cursor_pos[1] = 0.5;
     return ctx;
 }
 
@@ -119,7 +119,7 @@ static void WM_i3_replace(I3_context ctx, I3_node old, I3_node new)
     I3_node parent = old->parent;
     if(!parent){
      ctx->layout = new;
-     new->parent =0;
+     new->parent = 0;
     } else {
         int index = List_contains(parent->nodes, &old);
         List_GET_REF(I3_node, parent->nodes, index) = new;
@@ -131,18 +131,19 @@ void WM_i3_split(I3_context ctx, I3_direction direction)
 {
     I3_node parent = ctx->selected->parent;
     int index = 0;
-    if(!parent || parent->type!=(direction&1)){ // herterogenous split
+    if(!parent || parent->type!=((int)direction&1)){ // herterogenous split
 
         I3_node node = malloc(sizeof(_I3_node));
         node->nodes = LIST_create(I3_node);
         node->fracs = 1;
-        node->type = direction&1;
+        node->type = (int)direction&1;
         I3_node *child = List_push(node->nodes, &ctx->selected);
 
         WM_i3_replace(ctx, ctx->selected, node);
         parent = node;
 
         (*child)->parent = node;
+        printf("new Split: %p\n", node);
 
 
     } else {
@@ -150,7 +151,8 @@ void WM_i3_split(I3_context ctx, I3_direction direction)
     }
 
     I3_node new = malloc(sizeof(_I3_node));
-    List_insert(parent->nodes, index+((direction&2)!=0), &new);
+    printf("new Node: %p\n", new);
+    List_insert(parent->nodes, index+(((int)direction&2)!=0), &new);
 
     *new = (_I3_node){.type=LEAF, .fracs=1, .parent=parent};
 
@@ -188,7 +190,7 @@ static I3_node fit_visual_offset(LIST(I3_node) nodes, float visual_offset)
     return closest;
 }
 
-static I3_node descend(I3_node current, float visual_offset, I3_direction direction)
+static I3_node descend(I3_node current, float cursor, I3_direction direction)
 /*
 ** Select closest window in next fram
 **
@@ -196,20 +198,45 @@ static I3_node descend(I3_node current, float visual_offset, I3_direction direct
 */
 {
     while(current->type!=LEAF){
-        if(current->type==(direction&1)){
+        if(current->type==((int)direction&1)){
             // go into closest next (direction)
-            current = *LIST_at(I3_node)(current->nodes, direction&2 ? 0 : -1); // 0 : -1 -> reversed direction
+            current = *LIST_at(I3_node)(current->nodes, ((int)direction)&2 ? 0 : -1); // 0 : -1 -> reversed direction
         }else{
             // fit visual center
-            I3_node next = fit_visual_offset(current->nodes, visual_offset);
+            I3_node next = fit_visual_offset(current->nodes, cursor);
 
             // rescale visual_offset
             float frame_size = (float)next->fracs/get_fracs(current->nodes, -1);
-            visual_offset/=frame_size;
+            cursor/=frame_size;
             current = next;
         }
     }
     return current;
+}
+
+float WM_i3_cursor_pos_get(I3_context ctx, I3_type direction)
+{
+    I3_node current = ctx->selected,
+            parent;
+    // keep track of visual_offset
+    // start with half window size
+    float visual_offset=0.5;
+
+    // try find current with children in ["direction"]
+    while ((parent = current->parent)) {
+        int index = List_contains(parent->nodes, &current);
+
+        if(direction==parent->type){ // wrong orientation
+            int total_frac = get_fracs(parent->nodes, -1);
+            float frame_offset = 0;
+            if(index>0) frame_offset = (float)get_fracs(parent->nodes, index-1)/total_frac;
+
+            visual_offset*=(float)current->fracs/(float)total_frac; // scale current offset
+            visual_offset+=frame_offset;
+        }
+        current=parent;
+    }
+    return visual_offset;
 }
 
 extern int max(int, int);
@@ -219,40 +246,25 @@ bool WM_i3_select(I3_context ctx, I3_direction direction)
 */
 {
     I3_node current = ctx->selected,
-        parent;
-    // keep track of visual_offset
-    // start with half window size
-    float visual_offset=0.5;
+            parent;
 
     // try find current with children in ["direction"]
-    while ((parent = current->parent)) {
+    for(;(parent = current->parent); current = parent) {
+
+        if(((int)direction&1)!=parent->type)
+            continue;
 
         int index = List_contains(parent->nodes, &current);
-
-        if((direction&1)!=parent->type){ // wrong orientation
-            int total_frac = get_fracs(parent->nodes, -1);
-            float frame_offset = 0;
-            if(index>0) frame_offset = (float)get_fracs(parent->nodes, index-1)/total_frac;
-
-            visual_offset*=(float)current->fracs/(float)total_frac; // scale current offset
-            visual_offset+=frame_offset;
-          goto next;
-        }
-
         int selected = index+(direction&2 ? 1 : -1);
-
-        // calc new absolute offset (to most outer frame)
+        if(selected < 0 || selected >= List_size(parent->nodes))
+            break;
 
         if(selected<0 || !(current = *LIST_at(I3_node)(parent->nodes, selected)))
-            goto next; // if no other children, continue search
+            continue;
 
-        // frame present in [direction]
-        // descend into the frame
-        ctx->selected = descend(current, visual_offset, direction);
+        ctx->selected = descend(current, ctx->cursor_pos[!(direction&1)], direction);
+        ctx->cursor_pos[direction&1] = WM_i3_cursor_pos_get(ctx, direction&1);
         return  true;
-
-        next:
-        current=parent;
     }
     return false;
 }
@@ -293,13 +305,14 @@ bool WM_i3_kill(I3_context ctx)
         WM_i3_replace(ctx, parent, sole);
 
         List_free(parent->nodes);
+        free(parent);
         ctx->selected = sole;
 
     } else {
         if(index>=(int)List_size(parent->nodes)) index--;
             ctx->selected=*LIST_at(I3_node)(parent->nodes, index);
     }
-    ctx->selected = descend(ctx->selected, 0, I3_LEFT);
+    ctx->selected = descend(ctx->selected, ctx->cursor_pos[1], I3_LEFT);
     ctx->dirty = true;
 
     return true;
@@ -328,6 +341,7 @@ void WM_i3_set(I3_context ctx, BasicWindow win)
     ctx->selected->type=LEAF;
     ctx->selected->leaf.win = win;
     DWM_window_renderer_set(ctx->selected->leaf.frame, BW_get_context(win));
+    printf("new win: %p\n", ctx->selected);
 }
 
 BasicWindow WM_i3_get(I3_context ctx)

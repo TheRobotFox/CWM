@@ -84,14 +84,14 @@
 /* 	} */
 /* } */
 
-void set(RR_context ctx, int16_t x, int16_t y, RR_pixel pix)
-{
-	Conscreen_screen_set(x, y, pix);
-}
-RR_pixel get(RR_context ctx, int16_t x, int16_t y)
-{
-	return Conscreen_screen_get(x, y);
-}
+/* void set(RR_context ctx, int16_t x, int16_t y, RR_pixel pix) */
+/* { */
+/* 	Conscreen_screen_set(x, y, pix); */
+/* } */
+/* RR_pixel get(RR_context ctx, int16_t x, int16_t y) */
+/* { */
+/* 	return Conscreen_screen_get(x, y); */
+/* } */
 
 /* int main(void) */
 /* { */
@@ -156,82 +156,82 @@ RR_pixel get(RR_context ctx, int16_t x, int16_t y)
 /* 	Conscreen_deinit(); */
 /* } */
 
-typedef struct {
-	BasicWindow disp;
-	char *buff;
-	int max;
-	int index;
-} Writer_info;
+/* typedef struct { */
+/* 	BasicWindow disp; */
+/* 	char *buff; */
+/* 	int max; */
+/* 	int index; */
+/* } Writer_info; */
 
-void writer_key(App app, char key, void *data)
-{
-	Writer_info *info = data;
-	if(key==127){
-		if(info->index>0)
-			info->index--;
-	} else{
-		if(info->index==info->max){
-			BW_error(app, WARNING, "Buffer length exceeded! %d %d", key, info->max);
-			return;
-		}
-		info->buff[info->index++]=key;
-	}
-	info->buff[info->index]=0;
-	BW_text_set(app, info->buff, info->index);
-}
+/* void writer_key(App app, char key, void *data) */
+/* { */
+/* 	Writer_info *info = data; */
+/* 	if(key==127){ */
+/* 		if(info->index>0) */
+/* 			info->index--; */
+/* 	} else{ */
+/* 		if(info->index==info->max){ */
+/* 			BW_error(app, WARNING, "Buffer length exceeded! %d %d", key, info->max); */
+/* 			return; */
+/* 		} */
+/* 		info->buff[info->index++]=key; */
+/* 	} */
+/* 	info->buff[info->index]=0; */
+/* 	BW_text_set(app, info->buff, info->index); */
+/* } */
 
-void render(RR_context ctx, AM i3){
-	AM_prepare(i3);
-	Conscreen_screen_begin();
-	Conscreen_screen_clear();
-	Conscreen_point p = Conscreen_screen_size();
-	RR_render(ctx, (RR_point){p.x, p.y}, get, set, NULL);
-	Conscreen_screen_flush();
-}
+/* void render(RR_context ctx, AM i3){ */
+/* 	AM_prepare(i3); */
+/* 	Conscreen_screen_begin(); */
+/* 	Conscreen_screen_clear(); */
+/* 	Conscreen_point p = Conscreen_screen_size(); */
+/* 	RR_render(ctx, (RR_point){p.x, p.y}, get, set, NULL); */
+/* 	Conscreen_screen_flush(); */
+/* } */
 
 
-App writer_create(const char* name, int size)
-{
-	App writer = AM_app_create(name, writer_key);
-	Writer_info *info = malloc(sizeof(Writer_info));
-	info->buff = malloc(size+1);
-	info->max=size;
-	info->index=0;
-	info->disp= (BasicWindow)writer;
+/* App writer_create(const char* name, int size) */
+/* { */
+/* 	App writer = AM_app_create(name, writer_key); */
+/* 	Writer_info *info = malloc(sizeof(Writer_info)); */
+/* 	info->buff = malloc(size+1); */
+/* 	info->max=size; */
+/* 	info->index=0; */
+/* 	info->disp= (BasicWindow)writer; */
 
-	AM_app_data_set(writer, info);
-	return writer;
-}
+/* 	AM_app_data_set(writer, info); */
+/* 	return writer; */
+/* } */
 
-#define WRITER_COUNT 10
-const char* writer_names[WRITER_COUNT] = {
-"Writer 1",
-"Writer 2",
-"Writer 3",
-"Writer 4",
-"Writer 5",
-"Writer 6",
-"Writer 7",
-"Writer 8",
-"Writer 9",
-"Writer 10"
-};
-AM app_man;
-int main(void)
-{
-	app_man = AM_create();
-	App writers[WRITER_COUNT];
-	for(int i=0; i<WRITER_COUNT; i++){
-		writers[i]=writer_create(writer_names[i], i*2);
-		AM_register(app_man, writers[i]);
-	}
+/* #define WRITER_COUNT 10 */
+/* const char* writer_names[WRITER_COUNT] = { */
+/* "Writer 1", */
+/* "Writer 2", */
+/* "Writer 3", */
+/* "Writer 4", */
+/* "Writer 5", */
+/* "Writer 6", */
+/* "Writer 7", */
+/* "Writer 8", */
+/* "Writer 9", */
+/* "Writer 10" */
+/* }; */
+/* AM app_man; */
+/* int main(void) */
+/* { */
+/* 	app_man = AM_create(); */
+/* 	App writers[WRITER_COUNT]; */
+/* 	for(int i=0; i<WRITER_COUNT; i++){ */
+/* 		writers[i]=writer_create(writer_names[i], i*2); */
+/* 		AM_register(app_man, writers[i]); */
+/* 	} */
 
-	Conscreen_init();
+/* 	Conscreen_init(); */
 
-	while(true){
-		render(BW_get_context(app_man), app_man);
-		AM_key_event(app_man, Conscreen_console_get_key());
-	}
+/* 	while(true){ */
+/* 		render(BW_get_context(app_man), app_man); */
+/* 		AM_key_event(app_man, Conscreen_console_get_key()); */
+/* 	} */
 
-	Conscreen_deinit();
-}
+/* 	Conscreen_deinit(); */
+/* } */
