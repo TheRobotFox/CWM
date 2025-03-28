@@ -193,17 +193,24 @@ void AM_key_event(AM _am, char key)
         {
             // movement
             switch (key) {
+                case 8:
                 case 'h': WM_i3_select(am->i3, I3_LEFT); break;
+                case 12:
                 case 'l': WM_i3_select(am->i3, I3_RIGHT); break;
+                case 10:
                 case 'j': WM_i3_select(am->i3, I3_DOWN); break;
+                case 11:
                 case 'k': WM_i3_select(am->i3, I3_UP); break;
+                case 19:
                 case 's': WM_i3_split(am->i3, I3_DOWN); AM_select(am); break;
+                case 22:
                 case 'v': WM_i3_split(am->i3, I3_RIGHT); AM_select(am); break;
                 case 'c': WM_i3_kill(am->i3); break;
+                case 1:
                 case 'a': WM_i3_select_parent(am->i3); goto reset;
                 case ' ': AM_select(am); goto reset;
                 default:
-                    BW_error(&am->win, WARNING, "Invalid Command '%c' (use h,j,k,l,c,s,v,' ')", key);
+                    BW_error(&am->win, WARNING, "Invalid Command '%c'(%d) (use h,j,k,l,c,s,v,' ')", key, key);
                     goto reset;
             };
             // highlight new App
