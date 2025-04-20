@@ -1,5 +1,4 @@
 #include "R_dwm.h"
-#include "Conscreen/List/List.h"
 #include "RR.h"
 #include "RR_context.h"
 #include "RR_renderer.h"
@@ -76,8 +75,8 @@ static struct Rect DWM_window_rect(RR_context ctx, DWM_window w)
         size.y = w->size.absolute.y;
         break;
     case DWM_RELATIVE:
-        size.x = ceilf(w->size.relative.x*parrent_size.x-pos.x+rect.pos.x);
-        size.y = ceil(w->size.relative.y*parrent_size.y-pos.y+rect.pos.y);
+        size.x = ceilf((w->size.relative.x*parrent_size.x)-pos.x+rect.pos.x);
+        size.y = ceilf((w->size.relative.y*parrent_size.y)-pos.y+rect.pos.y);
         break;
     }
 

@@ -2,8 +2,6 @@
 
 #include "BasicWindow.h"
 
-BasicWindow AM_create();
-
 typedef BasicWindow App;
 typedef BasicWindow AM;
 

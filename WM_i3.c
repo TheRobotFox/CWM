@@ -4,7 +4,6 @@
 #include "Conscreen/List/List.h"
 #include "RR.h"
 #include "R_dwm.h"
-#include "WM_i3.h"
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -256,7 +255,7 @@ bool WM_i3_select(I3_context ctx, I3_direction direction)
 
         int index = List_contains(parent->nodes, &current);
         int selected = index+(direction&2 ? 1 : -1);
-        if(selected < 0 || selected >= List_size(parent->nodes))
+        if(selected < 0 || (size_t)selected >= List_size(parent->nodes))
             break;
 
         if(selected<0 || !(current = *LIST_at(I3_node)(parent->nodes, selected)))
